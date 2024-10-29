@@ -1,24 +1,35 @@
-// Your code here.
-cy.get('.items').then($items => {
-  const initialScrollLeft = $items[0].scrollLeft;
-  console.log('Initial scrollLeft:', initialScrollLeft);
+const itemsContainer = document.querySelector(".items");
+const items = document.querySelectorAll(".item");
 
-  // Verify the initial scrollLeft value is 0
-  expect(initialScrollLeft).to.equal(0);
+let isDragging = false;
+let startX;
+let scrollLeft;
 
-  // Perform the drag action
-  cy.get('.items')
-    .trigger('mousedown', { which: 1, pageX: 493, pageY: 391 })
-    .trigger('mousemove', { pageX: 271, pageY: 391 })
-    .wait(500) // Increase wait time to ensure the scroll action completes
-    .trigger('mouseup', { force: true });
+itemsContainer.addEventListener("mousedown", (e) => {
+  isDragging = true;
+  startX = e.pageX - itemsContainer.offsetLeft;
+  scrollLeft = itemsContainer.scrollLeft;
+  itemsContainer.classList.add("active");
+});
 
-  // Check the scrollLeft value after the drag action
-  cy.get('.items').should($items => {
-    const finalScrollLeft = $items[0].scrollLeft;
-    console.log('Final scrollLeft:', finalScrollLeft);
+itemsContainer.addEventListener("mouseup", () => {
+  isDragging = false;
+  itemsContainer.classList.remove("active");
+});
 
-    // Assert the final scrollLeft is greater than the initial value
-    expect(finalScrollLeft).to.be.greaterThan(initialScrollLeft);
-  });
+itemsContainer.addEventListener("mouseleave", () => {
+  isDragging = false;
+  itemsContainer.classList.remove("active");
+});
+
+itemsContainer.addEventListener("mousemove", (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const x = e.pageX - itemsContainer.offsetLeft;
+  const walk = (x - startX) * 2;
+  itemsContainer.scrollLeft = scrollLeft - walk;
+});
+
+itemsContainer.addEventListener("contextmenu", (e) => {
+  e.preventDefault();
 });
